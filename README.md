@@ -7,4 +7,14 @@ It can be used to measure:
 * Humidity
 * Light intensity
 
-And also controlled by WiFi
+It sends all data by WiFi.
+
+## Components
+
+* Wifi module: ESP8266
+
+## Links
+
+[wifi_tutorial_spa_1](http://kio4.com/arduino/57modulowifi_2.htm)
+
+[wifi_tutorial_spa_2](http://www.prometec.net/arduino-wifi/)
