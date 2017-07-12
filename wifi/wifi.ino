@@ -1,102 +1,60 @@
 #include <SoftwareSerial.h>
-#define DEBUG true
 
-#define accesspoint "AndroidAP"
-#define password "jaime1980"
+// Pin 2: Rx, Pin 3: Tx
+SoftwareSerial wifi(2,3);
 
-#define baud_rate 19200  //115200
-
-// In Arduino> RX: pin 3, TX: pin 2
-
-SoftwareSerial esp8266(3,2); 
-
-void setup()
+void sendWifi(char *msg, long tout, long toutS)
 {
+  long t0, t;
   int c;
-  pinMode(13,OUTPUT);
+  
+  wifi.write(msg);
+  t0=millis()+tout;
+ 
+  while(1) {
+    t=millis();
+    if (t>t0){
+      break;
+    }
+    c=wifi.read();
+    if (c!=-1){
+      t0=t+toutS;
+      Serial.write(c);
+    }
+  }
+}
+
+#define TOUTS 5000
+#define TOUT  5000
+
+void setup ( )
+{
+  char buff[32];
+  char msg[1024];
+  long tout=5000;
+  long t0, t;
+ 
+  wifi.begin(9600);
   Serial.begin(9600);
-  esp8266.begin(baud_rate);
- 
-  delay(1000); 
-  Serial.write("AT+CIOBAUD=19200\r\n");
- 
-  //for(;;);
-  Serial.println("Hola radiola....");
-  
-  esp8266.write("AT+CIOBAUD=19200\r\n");
-  while((c=esp8266.read())==-1);
-Serial.println(c);
-  //sendData("AT+RST\r\n",10000,DEBUG); // Deletes previous configuration
-  
-  for(;;);
 
-  sendData("AT+CWJAP=\""accesspoint"\",\""password"\"\r\n\n", 2000, DEBUG);
+  Serial.println("Modulo WIFI test");
+ 
+  sendWifi("AT+GMR\r\n", TOUT, TOUTS);
+  sendWifi("AT+RST\r\n",TOUT,TOUTS); // Borra la configuración que tenía el módulo
+  //sendWifi("AT+CWJAP=\"RodrigoAP\",\"xxxxxx\"\r\n", TOUT,TOUTS);
 
-  delay(5000); 
-  sendData("AT+CWMODE=3\r\n",1000,DEBUG); //Client and server side  
-  sendData("AT+CIFSR\r\n",1000,DEBUG); // Show client and server IP in Serial Monitor
-  sendData("AT+CIPMUX=1\r\n",1000,DEBUG); // Several connections
-  sendData("AT+CIPSERVER=1,80\r\n",1000,DEBUG); // webserver port = 80
+//delay(5000); // Espera un poco que conecte con el Router.
+//sendData("AT+CWMODE=3\r\n",1000,DEBUG); // Modo de cliente y servidor.
+//sendData("AT+CIFSR\r\n",1000,DEBUG); // En el Serial Monitor aparece la IP de cliente y servidor.
+//sendData("AT+CIPMUX=1\r\n",1000,DEBUG); // Multiples conexiones.
+//sendData("AT+CIPSERVER=1,80\r\n",1000,DEBUG); // El Puerto web es el 80
+    sendWifi("AT+CIPSTART=\"TCP\",\"192.168.43.1\",2221\r\n", TOUT , TOUTS);
+    sendWifi("AT+CIPSEND=5\r\n", TOUT, TOUTS);
+    sendWifi("HEL\r\n", TOUT, TOUTS);
+  Serial.println("Se acabo");
 }
 
-void loop()
+void loop ()
 {
-  if(esp8266.available()) 
-    {
-
-      if(esp8266.find("+IPD,"))
-	{
-	  delay(1000);
-
-	  int connectionId = esp8266.read()-48; 
-
-	  String webpage = "<head><meta http-equiv=\"refresh\" content=\"4\"></head>";
-	  webpage += "<h1>KIO4.COM</h1>";
-	  webpage += "Switch 8 status: ";
-	  int p8 = digitalRead(8);
-	  webpage += p8;
-	  webpage += "<br>Switch 9 status: ";
-	  int p9 = digitalRead(9);
-	  webpage += p9;
-
-	  String cipSend = "AT+CIPSEND=";
-	  cipSend += connectionId;
-	  cipSend += ",";
-	  cipSend +=webpage.length();
-	  cipSend +="\r\n";
-
-	  sendData(cipSend,1000,DEBUG);
-	  sendData(webpage,1000,DEBUG);
-
-	  // Close the connection
-	  String closeCommand = "AT+CIPCLOSE="; 
-	  closeCommand+=connectionId;
-	  closeCommand+="\r\n";
-
-	  sendData(closeCommand,3000,DEBUG);
-	}
-    }
-}
-
-String sendData(String command, long timeout, boolean debug)
-{
-  String response = "";
-  esp8266.print(command); 
-  long time = millis();
-Serial.println("comando 0000");
-  while( (time+timeout) > millis())
-    {
-      while(esp8266.available())
-	{
-
-	  char c = esp8266.read(); 
-	  response+=c; 
-	} 
-    }
-Serial.println("tout....");
-  if(debug)
-    {
-      Serial.print(response);
-    } 
-  return response;
+   // your code here ...
 }
