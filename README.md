@@ -8,7 +8,7 @@ It can be used to measure:
 * Light intensity
 
 It sends all data by WiFi to a database, in this case Influxdb.
-Grapahan can be used to visualize the measurements. 
+Graphana can be used to visualize the measurements. 
 
 ## Components
 
