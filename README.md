@@ -7,11 +7,15 @@ It can be used to measure:
 * Humidity
 * Light intensity
 
-It sends all data by WiFi.
+It sends all data by WiFi to a database, in this case Influxdb.
+Grapahan can be used to visualize the measurements. 
 
 ## Components
 
 * Wifi module: ESP8266
+* Pressure sensor : BMP180
+* Temperature and humidity: DTH22
+* Light sensor: TSL237
 
 ## Links
 
