@@ -14,6 +14,7 @@ and copy the config file
 Run influx 
 ```
 docker run -p 8086:8086 \
+      --name influxdb \
       -v $INFLUX_DIR:/var/lib/influxdb \
       -v $INFLUX_DIR/influxdb.conf:/etc/influxdb/influxdb.conf:ro \
 	  influxdb -config /etc/influxdb/influxdb.conf 
@@ -52,11 +53,11 @@ curl -i -XPOST 'http://localhost:8086/write?db=statsdemo' --data-binary 'cpu,hos
 To visualize data use grafana:
 ``` docker run \
   -d \
-    -p 3000:3000 \
-	  --name=grafana \
-	    -e "GF_SERVER_ROOT_URL=http://grafana.server.name" \
-		  -e "GF_SECURITY_ADMIN_PASSWORD=secret" \
-		    grafana/grafana
+  -p 3000:3000 \
+  --name=grafana \
+  -e "GF_SERVER_ROOT_URL=http://grafana.server.name" \
+  -e "GF_SECURITY_ADMIN_PASSWORD=secret" \
+   grafana/grafana
 ```
 
 Log using admin/admin
