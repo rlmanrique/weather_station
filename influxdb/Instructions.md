@@ -51,7 +51,8 @@ curl -i -XPOST 'http://localhost:8086/write?db=statsdemo' --data-binary 'cpu,hos
 ## Grafana
 
 To visualize data use grafana:
-``` docker run \
+``` 
+docker run \
   -d \
   -p 3000:3000 \
   --name=grafana \
