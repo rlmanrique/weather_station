@@ -16,6 +16,7 @@ Graphana can be used to visualize the measurements.
 * Pressure sensor : BMP180
 * Temperature and humidity: DTH22
 * Light sensor: TSL237
+* Tension regulator: LM3940
 
 ## Links
 
