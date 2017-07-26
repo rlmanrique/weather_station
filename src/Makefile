@@ -1,6 +1,6 @@
 BOARD_TAG    = nano328
 ARDUINO_PORT = /dev/ttyUSB0
-ARDUINO_LIBS = OneWire DallasTemperature
+ARDUINO_LIBS = OneWire DallasTemperature SoftwareSerial
 
 AVRDUDE_ARD_BAUDRATE =  57600
 
