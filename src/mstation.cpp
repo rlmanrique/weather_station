@@ -41,15 +41,15 @@ void setup(void)
   pinMode(9, OUTPUT);
   digitalWrite(9,HIGH);
   delay(500); //TODO:review this delay
-  
+ 
   // start serial port
-  Serial.begin(9600);
+  Serial.begin(38400);
   Serial.println("Dallas Temperature IC Control Library Demo");
   // Start up the library
   tsensors.begin();
   Serial.println("Start BT module");
   digitalWrite (8, HIGH);
-  btsensor.begin(57600);
+  btsensor.begin(38400);
 }
 
 void loop(void)
@@ -62,9 +62,16 @@ void loop(void)
   }
   Serial.print("Temperature is: ");
   Serial.println(temp);
-  if (Serial.available()) {
-    btsensor.write(temp);
+  if (btsensor.available()) {
+      Serial.println("BT sensor is on");
+    }
+  if (!btsensor.available()) {
+    Serial.println("BT not available");
   }
-    
-  delay(5000);
+  if (btsensor.available())
+    Serial.write(btsensor.read());
+  if (Serial.available())
+    btsensor.write(Serial.read());
+  
+  delay(1000);
 }
