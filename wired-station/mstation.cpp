@@ -22,6 +22,7 @@ void loop(void)
 {
   sensors.requestTemperatures(); // Send the command to get temperature readings
   Serial.print(sensors.getTempCByIndex(0));
+  Serial.print(' ');
   delay(1000);
 }
 

@@ -1,21 +1,30 @@
 import serial
+import calendar
 import time
 import argparse
 import http.client, urllib.parse
+import re
 
+######################################################################################################
+### --- Classes --- ###
 class Context(object):
     def __init__(self):
 
         # Influx
         self.influx_host  = "localhost:8086"
-        self.influx_table = "mydb"
-
+        self.influx_table = "weather_station"
+        self.influx_temp  = "temp"
+        self.influx_tags  = ",device=arduino1" # Note: They have to start with ,
+        
         # Serial port
         self.serial_port = "/dev/ttyUSB0"
         self.baud_rate = 9600
         
         self.temp_measure = 0.0
-        
+
+######################################################################################################
+### --- Functions --- ###
+
 def get_cmd_args(context):
     opts = argparse.ArgumentParser()
 
@@ -51,32 +60,58 @@ def get_cmd_args(context):
     
     return True
 
-def readlineCR(port):
-    rv = ""
-    while True:
-        ch = port.read()
-        rv += ch
-        if ch=='\r' or ch=='':
-            return rv
+######################################################################################################
+
+def check_temp_measure(temp):
+    pattern = re.compile("^([0-9]+).([0-9]+)$")
+    return pattern.match(string)
+
+######################################################################################################
+
+def get_time():
+    now = calendar.timegm(time.gmtime())
+    now_microseconds = str(now) + '000000000'
+    return now_microseconds
+
+######################################################################################################
 
 def read_measures(context):
-    port = serial.Serial(context.serial_port, baudrate=context.baud_rate, timeout=2.0)
-    while True:
-        rcv = readlineCR(port)
-        context.temp_measure = int(repr(rcv))
-        return 
+    try:
+        port = serial.Serial(context.serial_port, baudrate=context.baud_rate, timeout=5)
+        line = port.read(5).decode("utf-8")
+    except:
+        return '','Error: Cannot communicate with serial port' 
+    if check_temp_measure(line):
+        return '','Error: Measure has an invalid format' 
+    return line, ''
 
-def prepare_data(context):
-    conn = http.client.HTTPConnection(context.influx_host)
+######################################################################################################
+
+def send_data(context, measure):
+
+    try:
+        conn = http.client.HTTPConnection(context.influx_host)
+    except:
+        return 0, 'Error: unable to connect to influxDB'
+
     method = "POST"
     action = "/write?db=" + context.influx_table
-    data = 'cpu_load_short,host=server01,region=us-west value=0.67 14340555620000001'
-    headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
-    conn.request(method, action, data , headers)
-    response = conn.getresponse()
-    print(response.status, response.reason)
-    return '',''
     
+    measurement_type = context.influx_temp
+    tags             = context.influx_tags
+    data   = measurement_type + tags + ' value=' + str(measure) + ' ' + get_time()
+    
+    headers = {"Content-type": "application/x-www-form-urlencoded","Accept": "text/plain"}
+
+    try:
+        conn.request(method, action, data , headers)
+        response = conn.getresponse()
+        return response.status, response.reason
+    except:
+        return 0, 'Error: unable to send data to influxDB'
+
+######################################################################################################
+
 def main():
     context = Context()
     if not get_cmd_args(context):
@@ -86,19 +121,14 @@ def main():
     if err != '':
         print("Error reading measures, err=" + err)
         return
-
-    data, err = prepare_data(context)
-    if err != '':
-        print("Error preparing the data, err=" + err)
+    
+    response, reason  = send_data(context, measures)
+    if (response == 0) or (response != 204):
+        print("Error sending measures to database, err=" + str(reason))
         return
+    print("Measure "  + measure + " has been stored in the database")
+    
+######################################################################################################
 
-    err = send_measure(data)
-    if err != '':
-        print("Error sending measures to database, err=" + err)
-        return
-
-#####################################################################################
-# --- Main --- #
 if __name__ == "__main__":
     main()
-        
