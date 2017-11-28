@@ -6,6 +6,12 @@ import http.client, urllib.parse
 import re
 
 ######################################################################################################
+### --- Global --- ###
+
+INFLUX_SUCCESS_CODE = 204
+INFLUX_FAILURE_CODE = 0
+
+######################################################################################################
 ### --- Classes --- ###
 class Context(object):
     def __init__(self):
@@ -92,7 +98,7 @@ def send_data(context, measure):
     try:
         conn = http.client.HTTPConnection(context.influx_host)
     except:
-        return 0, 'Error: unable to connect to influxDB'
+        return INFLUX_FAILURE_CODE, 'Error: unable to connect to influxDB'
 
     method = "POST"
     action = "/write?db=" + context.influx_table
@@ -108,7 +114,7 @@ def send_data(context, measure):
         response = conn.getresponse()
         return response.status, response.reason
     except:
-        return 0, 'Error: unable to send data to influxDB'
+        return INFLUX_FAILURE_CODE, 'Error: unable to send data to influxDB'
 
 ######################################################################################################
 
@@ -123,7 +129,7 @@ def main():
         return
     
     response, reason  = send_data(context, measures)
-    if (response == 0) or (response != 204):
+    if (response == INFLUX_FAILURE_CODE) or (response != INFLUX_SUCCESS_CODE):
         print("Error sending measures to database, err=" + str(reason))
         return
     print("Measure "  + measure + " has been stored in the database")
