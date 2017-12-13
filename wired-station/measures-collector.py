@@ -69,8 +69,9 @@ def get_cmd_args(context):
 ######################################################################################################
 
 def check_temp_measure(temp):
+    print(temp)
     pattern = re.compile("^([0-9]+).([0-9]+)$")
-    return pattern.match(string)
+    return pattern.match(temp)
 
 ######################################################################################################
 
@@ -87,7 +88,7 @@ def read_measures(context):
         line = port.read(5).decode("utf-8")
     except:
         return '','Error: Cannot communicate with serial port' 
-    if check_temp_measure(line):
+    if not check_temp_measure(line):
         return '','Error: Measure has an invalid format' 
     return line, ''
 
@@ -132,7 +133,7 @@ def main():
     if (response == INFLUX_FAILURE_CODE) or (response != INFLUX_SUCCESS_CODE):
         print("Error sending measures to database, err=" + str(reason))
         return
-    print("Measure "  + measure + " has been stored in the database")
+    print("Measure " + measures + " has been stored in the database")
     
 ######################################################################################################
 
